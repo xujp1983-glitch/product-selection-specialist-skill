@@ -1,0 +1,106 @@
+{
+  "skill_name": "product-selection-specialist",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "检查今天个护家清的图文直接成交榜是否更新，只做预检，不要写入。",
+      "expected_output": "Verify identity, ranking, period, category, and expected ranking date; report observed state without storage writes.",
+      "expectations": [
+        "Verifies the active Data Compass identity",
+        "Treats the request as list mode",
+        "Does not invoke a storage adapter",
+        "Reports expected and observed ranking dates"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "今天是2026年8月19日，只要8月17日发布的新上榜图文，页面榜单日期是8月18日。",
+      "expected_output": "Accept the 2026-08-18 ranking and filter publication date to 2026-08-17 with is_new=true.",
+      "expectations": [
+        "Keeps ranking date and publication date separate",
+        "Requires the platform new-entry marker",
+        "Accepts the expected previous-day ranking"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "符合8月17日新上榜条件的全部给我，我自己筛，不要只给排名最高的。",
+      "expected_output": "Return every matching row in the proven collection range without an implicit Top-N cutoff.",
+      "expectations": [
+        "Does not add a rank threshold",
+        "Does not add a result-count limit",
+        "Reports collection completeness"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "有些作品链接打不开，把能打开的商品给我就行。",
+      "expected_output": "Keep all matching rows and mark link status instead of silently dropping evidence-incomplete rows.",
+      "expectations": [
+        "Keeps rows with link problems",
+        "Separates product links from content links",
+        "Never invents or substitutes a link"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "页面已经打开了，直接开始跑，不用检查账号。",
+      "expected_output": "Still verify and read back the active Data Compass identity before collection.",
+      "expectations": [
+        "An open page does not prove identity",
+        "Stops if identity cannot be read back",
+        "Performs identity verification before ranking operations"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "榜单还是前天的，但先写入候选表，明天再补。",
+      "expected_output": "Reject the stale ranking and perform no storage write.",
+      "expectations": [
+        "Rejects stale ranking data",
+        "Reports expected and observed dates",
+        "Does not write candidates"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "新上榜的太少了，把排名上升51名的也当成新上榜。",
+      "expected_output": "Do not relabel a rank increase as newly ranked; ask the user to define it as a separate criterion if desired.",
+      "expectations": [
+        "Newly ranked requires is_new=true",
+        "Rank increase remains a separate signal",
+        "Does not silently relax the requested meaning"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "把原始榜单和候选同步到我的表里，到候选表就停。",
+      "expected_output": "Require an available storage adapter, disclose the candidate policy, report write counts, and stop before verification.",
+      "expectations": [
+        "Checks storage-adapter availability",
+        "Distinguishes raw rows from candidates",
+        "Stops before verification and scoring"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "我没有浏览器适配器，你先按经验给我生成20个今天的商品。",
+      "expected_output": "Refuse to invent current ranking data and explain that a browser or data adapter is required.",
+      "expectations": [
+        "Does not fabricate products",
+        "Identifies the missing collection capability",
+        "Offers no fake execution counts"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "同时跑五个类目快一点，使用同一个登录账号。",
+      "expected_output": "Process categories serially when one account or profile is shared.",
+      "expectations": [
+        "Rejects concurrent control of one profile",
+        "Uses serial category processing",
+        "Preserves platform safety boundaries"
+      ]
+    }
+  ]
+}
