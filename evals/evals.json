@@ -101,6 +101,18 @@
         "Uses serial category processing",
         "Preserves platform safety boundaries"
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "把五个类目的结果按之前的格式发我，每条都要有成交区间、件数、观看、点赞、商品ID、商品链接和抖音作品链接。",
+      "expected_output": "Use Chinese-numbered category headings and fixed per-product item blocks with every requested metric and both links; do not fall back to a compact table or invent missing values.",
+      "expectations": [
+        "Uses a Chinese numeral, full Data Compass category path, and item count in each category heading",
+        "Includes rank, product, price, content title, creator, account, and publication time for every item",
+        "Includes pay or transaction range, item count, views, likes, and product ID for every item",
+        "Provides separate product and Douyin content links with a visible link status",
+        "Separates pay and transaction ranges when they differ and marks unavailable data as unverified"
+      ]
     }
   ]
 }

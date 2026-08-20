@@ -114,11 +114,20 @@ ranking_date
 platform_rank
 product_id
 product_name
+product_price
 product_link
+content_title
 content_link
 content_published_at
+creator_name
+creator_account
 is_new
 rank_change
+pay_amount_range
+transaction_amount_range
+paid_item_count_range
+view_count_range
+like_count_range
 capture_time
 link_status
 ```
@@ -147,24 +156,30 @@ If the user asks for all matches, traverse until the adapter proves the end of t
 
 ## Output Contract
 
-Start with a per-category summary:
+Users inspect these posts one by one, so the default response uses Chinese-numbered category groups and fixed item blocks. Start with one sentence stating the ranking, ranking date, target publication date, and total matches. Do not replace the item blocks with a compact table unless the user explicitly requests a table.
+
+Use the full Data Compass category path and preserve the requested category order:
 
 ```text
-Category: ...
-Ranking: Graphic Direct Conversion Ranking / Last 1 day
-Ranking date: YYYY-MM-DD
-Target publication date: YYYY-MM-DD / not specified
-Collected rows: N
-Matching rows: N
-Completeness: complete / complete within collected range
+一、[完整类目路径]（N条）
 ```
 
-Every result must include:
+Use this exact field order for every result and leave one blank line between products:
 
-| No. | Category | Platform rank | Product | Publication time | Newly ranked | Content link | Link status | Product link |
-|---|---|---:|---|---|---|---|---|---|
+```text
+排名[平台排名]｜[商品名称]｜售价¥[售价]
+作品：[作品标题；空标题写“（无标题）”]
+作者：[作者昵称]｜账号：[抖音号]｜发布：HH:MM
+成交/交易：¥[金额区间]｜件数：[成交件数区间]｜观看：[观看次数区间]｜点赞：[点赞数区间]
+商品ID：[商品ID]
+[商品链接](商品详情URL)｜[抖音作品](抖音作品URL)（可打开/异常/待验证）
+```
 
-For large results, create a complete CSV or Markdown artifact and keep message totals consistent with its row count. Do not show only the first few rows.
+Preserve Data Compass display units, for example `¥2,500–¥5,000` and `7.5万–10万`. When pay and transaction ranges match, combine them as `成交/交易`; when they differ, write `成交：...｜交易：...`. Write `待验证` for an unavailable value instead of estimating it.
+
+When the user requests N products per category, count distinct `product_id` values and retain the highest-ranked post as the representative for a duplicate product. When the user requests all posts, preserve every matching post without product-level deduplication.
+
+For large results, a complete CSV or Markdown artifact may accompany the response, but the message still uses these item blocks and its totals must match the artifact. Do not show only the first few rows. Keep zero-match categories as `（0条）`.
 
 When storage was requested, append raw write count, candidate write count, duplicate count, and the exact stopping point.
 
