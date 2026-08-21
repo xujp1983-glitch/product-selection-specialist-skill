@@ -20,7 +20,7 @@ Explicit user values override matching defaults. Never override a named category
 
 Use when the user asks to run rankings, find products, list all matches, inspect recent new entries, identify repeated products, or give the results to a director/editor for screening.
 
-The v0.2.0 category, freshness, price, grouping, repetition, link, and HTML rules below are **仅适用于用户清单模式**.
+The v0.2.1 category, freshness, price, grouping, repetition, link, and HTML rules below are **仅适用于用户清单模式**.
 
 ### Storage Sync Mode
 
@@ -157,6 +157,16 @@ Do not preserve input order, group by date, or pick the newest work as represent
 - Never substitute a product link for a Douyin work link.
 - If a work ID or product link is missing, keep the otherwise qualified relation and mark that field `待验证`.
 
+### Memory-Safe Product Detail Capture
+
+Product ID and product-link collection uses a **zero-residency** tab policy:
+
+- Prefer product data already present in the ranking row, visible popover, or supported adapter output. Do not open a detail page when those fields are available.
+- When a visible product click is unavoidable, snapshot the open-tab baseline first. Normally keep one temporary product-detail tab; allow at most three temporary product-detail tabs at any moment so capture stays efficient without permitting accumulation.
+- Capture the product ID or destination, close each temporary product-detail tab immediately, and require the browser to return to the pre-click tab baseline before processing the next product.
+- Never keep a pool of product pages open for later reading. Category traversal remains serial, and Douyin work pages stay unopened in user-list mode.
+- If a temporary product tab appears late, cannot be closed, or the baseline cannot be restored, pause collection and apply the failure-handling cleanup rule. Do not keep collecting while tabs accumulate.
+
 ## HTML Delivery
 
 User-list mode produces a new dated, standalone HTML artifact rather than Markdown. The chat reply contains only the result summary, coverage state, repetition counts, and a clickable link to the HTML file.
@@ -193,7 +203,7 @@ If the user explicitly asks for the previous text format instead of HTML, honor 
 [商品链接](商品详情URL)｜[抖音作品](抖音作品URL)（待验证）
 ```
 
-Preserve source display units and write `待验证` for unavailable values. Do not claim a link was opened, valid, or compliant. This explicit override changes only presentation; the v0.2.0 three-day, category, filtering, grouping, and sorting rules still apply.
+Preserve source display units and write `待验证` for unavailable values. Do not claim a link was opened, valid, or compliant. This explicit override changes only presentation; the v0.2.1 three-day, category, filtering, grouping, and sorting rules still apply.
 
 ## Completeness And Failure Rules
 

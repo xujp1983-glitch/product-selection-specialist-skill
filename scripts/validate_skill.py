@@ -127,8 +127,8 @@ def validate_evals(errors: list[str]) -> None:
 
 def validate_version(errors: list[str]) -> None:
     path = ROOT / "VERSION"
-    if path.is_file() and path.read_text(encoding="utf-8").strip() != "0.2.0":
-        errors.append("VERSION must be 0.2.0")
+    if path.is_file() and path.read_text(encoding="utf-8").strip() != "0.2.1":
+        errors.append("VERSION must be 0.2.1")
 
 
 def validate_category_catalog(errors: list[str]) -> None:

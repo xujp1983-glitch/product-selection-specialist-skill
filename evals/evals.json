@@ -218,6 +218,17 @@
         "Provides separate product and deterministic Douyin work links",
         "Marks unavailable values and link status as unverified without opening links"
       ]
+    },
+    {
+      "id": 22,
+      "prompt": "跑全量时商品页越开越多，电脑要卡死了。继续采集，但别堆标签页。",
+      "expected_output": "Keep collection serial, prefer product data already present in the ranking page, and when a detail click is unavoidable close each temporary tab immediately and verify the tab count returns to baseline before continuing.",
+      "expectations": [
+        "Uses a zero-residency product-detail tab policy",
+        "Normally keeps one temporary product-detail tab and allows at most three at once",
+        "Closes temporary tabs immediately after capturing the product ID or link",
+        "Pauses and cleans up instead of continuing when the baseline is not restored"
+      ]
     }
   ]
 }

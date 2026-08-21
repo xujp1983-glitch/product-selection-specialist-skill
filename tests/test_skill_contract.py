@@ -12,8 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SkillContractTest(unittest.TestCase):
-    def test_release_version_is_020(self) -> None:
-        self.assertEqual((ROOT / "VERSION").read_text(encoding="utf-8").strip(), "0.2.0")
+    def test_release_version_is_021(self) -> None:
+        self.assertEqual((ROOT / "VERSION").read_text(encoding="utf-8").strip(), "0.2.1")
 
     def test_fixed_category_catalog_contains_all_five_business_anchors(self) -> None:
         catalog = json.loads(
@@ -62,6 +62,22 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("作品 ID", skill)
         self.assertIn("https://www.douyin.com/video/{作品ID}", skill)
         self.assertIn("不打开验证", skill)
+
+    def test_product_detail_collection_has_a_zero_residency_tab_budget(self) -> None:
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        failure = (ROOT / "references/failure-handling.md").read_text(
+            encoding="utf-8"
+        )
+
+        for phrase in (
+            "zero-residency",
+            "Normally keep one temporary product-detail tab",
+            "at most three temporary product-detail tabs",
+            "return to the pre-click tab baseline",
+        ):
+            self.assertIn(phrase, skill)
+        self.assertIn("pause collection", failure)
+        self.assertIn("temporary product-detail tabs", failure)
 
 
 if __name__ == "__main__":

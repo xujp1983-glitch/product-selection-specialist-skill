@@ -25,6 +25,18 @@ When the shared platform gate remains healthy, retry a failed configured node on
 
 A missing category entry, unstable rows, or an early pagination stop is a node failure, not proof of no products.
 
+## Temporary Product-Tab Cleanup
+
+Product-detail capture must return to the pre-click open-tab baseline before the next product is processed. The normal target is one temporary tab and the hard limit is three. If temporary product-detail tabs remain, appear after the first cleanup pass, exceed the three-tab budget, or cannot be closed:
+
+1. pause collection immediately;
+2. enumerate only the temporary product-detail tabs created by the current capture action;
+3. close them and verify the baseline again;
+4. retry the current relation once only after the baseline is restored;
+5. otherwise record the relation as unresolved and treat repeated tab leakage as a category-node failure.
+
+Never solve tab leakage by opening more pages, closing unrelated user tabs, or continuing the batch with accumulated detail pages.
+
 ## Unresolved Relations
 
 Do not place a relation in the qualified product list when publication time is missing/unreadable or new-entry evidence is absent. Preserve the safe identifying fields in the unresolved ledger and count them in the summary.

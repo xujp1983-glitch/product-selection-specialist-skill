@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-08-21
+
+- Added a zero-residency product-detail tab budget so full-category collection cannot accumulate browser tabs.
+- Balanced throughput and stability around one normal temporary tab with a hard ceiling of three.
+- Required immediate cleanup and baseline verification before processing the next product.
+- Added an evaluation and contract coverage for low-memory continuation after tab leakage.
+
 ## 0.2.0 - 2026-08-21
 
 - Added a fixed, user-approved fine-category catalog for the five default business anchors.
