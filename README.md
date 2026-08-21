@@ -1,80 +1,67 @@
 # Product Selection Specialist Skill
 
-一个可安装的 AI 选品方法 Skill，用于规范抖店数据罗盘的商品发现阶段。
+一个可安装、可分享的抖音电商罗盘选品 Skill。v0.2.0 默认深挖固定五大类目的细分类目，在最新一期“图文直接成交榜 / 近1天”中寻找近3个完整自然日发布且明确新上榜的作品，并把同一商品的重复作品集中展示。
 
-它帮助 Agent 正确处理榜单日期、作品发布日期、新上榜标记、完整结果和作品链接证据，并在进入百应核验、评分或商务动作之前停止。
+## v0.2.0 能做什么
 
-## 能解决什么
+- 先核验“抖店数据罗盘”身份、图文榜、近1天和最新榜单日期。
+- 使用一次性固化的五大类目目录，日常运行不重复扫描类目菜单。
+- 每个类目节点串行采集到 TOP200 或自然结束，不设商品数量上限。
+- 唯一硬排除是最低可购买价大于 ¥1000；价格缺失保留并标记。
+- 按商品 ID 分组，保留全部作品并识别“重复出现 / 重点复刻 / 高频爆款标的”。
+- 从作品 ID 直接生成抖音链接，不检查链接有效性或内容违规。
+- 输出一个可直接打开的 `选品结果-YYYY-MM-DD-近3日.html` 页面。
 
-- 检查“图文直接成交榜 / 近1天”是否为最新榜单。
-- 按类目采集榜单并保留可验证的原始字段。
-- 精确筛选指定发布日期的新上榜作品。
-- 用户要求“全部”时，不擅自缩减为 Top 5 或 Top 10。
-- 分开记录商品详情链接和抖音作品链接。
-- 对登录失效、验证码、旧榜单、链接缺失和数据不完整采用停止并报告策略。
-
-## 不包含什么
-
-这是方法 Skill，不附带任何人的账号、Cookie、浏览器 Profile、平台选择器、服务器配置或私有采集程序。它也不会自动执行百应核验、评分、申请样品、联系商家等动作。
-
-要执行真实采集，使用者必须自行提供已授权的浏览器或数据适配器。接口要求见 [`references/adapter-contract.md`](references/adapter-contract.md)。
+飞书/存储同步只有在用户明确要求时才运行，并继续使用接入项目原有的候选规则。
 
 ## 安装
 
-### Codex / 通用 Agent Skills
+### Codex
+
+```bash
+git clone https://github.com/xujp1983-glitch/product-selection-specialist-skill.git \
+  ~/.codex/skills/product-selection-specialist
+```
+
+### 通用 Agent Skills
 
 ```bash
 git clone https://github.com/xujp1983-glitch/product-selection-specialist-skill.git \
   ~/.agents/skills/product-selection-specialist
 ```
 
-重新启动 Agent 会话，使其重新读取 Skill 元数据。若你的工具使用其他 Skill 目录，把仓库克隆到对应目录即可。
+重新启动会话，使 Agent 重新读取 Skill 元数据。真实采集需要使用者提供已授权的数据罗盘浏览器或适配器；仓库不包含账号、Cookie、浏览器 Profile、私有接口或采集程序。
 
 ## 使用示例
 
 ```text
-选品专员，检查今天个护家清的图文直接成交榜是否更新，先不要写入。
+选品专员，跑我常用的5个类目，找近三天发布的新上榜图文，全部给我。
 ```
 
 ```text
-选品专员，跑常用5个类目，只要8月17日发布且平台标记为新上榜的作品，全部给我。
+选品专员，把重复出现的商品放到最上面的爆款雷达里，结果输出HTML。
 ```
 
 ```text
-选品专员，把每个商品对应的抖音作品链接和商品详情链接分开登记。
+选品专员，更新细分类目；我授权你重新读取数据罗盘类目菜单。
 ```
 
-```text
-选品专员，将通过既定候选规则的数据同步到已配置的候选表，到候选表后停止。
+## HTML 生成器
+
+把适配器产出的标准 JSON 交给生成器：
+
+```bash
+node scripts/render_selection_html.mjs input.json --output-dir ./results
 ```
 
-## 两种模式
-
-### 用户清单模式
-
-默认模式。采集和筛选真实数据，返回完整命中清单，不写外部系统。
-
-### 存储同步模式
-
-只有用户明确要求写入时启用。使用者需要自行配置存储适配器，并明确候选规则和幂等键。
-
-## 关键语义
-
-- **榜单日期**：榜单统计所属日期。
-- **作品发布日期**：图文作品实际发布时间。
-- **新上榜**：必须由平台的明确标记证明，不能用排名上涨替代。
-- **全部结果**：已证明采集范围内的全部命中项，不是 Agent 主观挑选的少量结果。
+输入字段见 [`references/adapter-contract.md`](references/adapter-contract.md)。生成器无第三方依赖，使用 Node.js 22+。
 
 ## 验证
 
 ```bash
 python3 scripts/validate_skill.py
-```
-
-成功时输出：
-
-```text
-validation passed
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+node --test tests/*.test.mjs
 ```
 
 ## 项目结构
@@ -83,14 +70,20 @@ validation passed
 .
 ├── SKILL.md
 ├── README.md
-├── evals/
-│   └── evals.json
+├── VERSION
+├── CHANGELOG.md
+├── evals/evals.json
 ├── references/
 │   ├── adapter-contract.md
+│   ├── category-catalog.yaml
 │   ├── failure-handling.md
 │   └── workflow.md
-└── scripts/
-    └── validate_skill.py
+├── scripts/
+│   ├── render_selection_html.mjs
+│   └── validate_skill.py
+└── tests/
+    ├── render_selection_html.test.mjs
+    └── test_skill_contract.py
 ```
 
 ## License

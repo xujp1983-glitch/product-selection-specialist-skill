@@ -2,54 +2,60 @@
 
 ## Platform-Level Stops
 
-Stop the whole run when identity, login, access, ranking type, ranking period, or ranking date cannot be verified. Explain the business consequence first:
+Stop the whole run immediately when any shared gate fails:
 
-- `The active Data Compass identity could not be confirmed.`
-- `The latest expected ranking is not available yet.`
-- `The selected page is not the requested graphic ranking.`
-- `The platform requested human verification.`
+- intended Data Compass browser/profile identity cannot be read back;
+- source is not Data Compass;
+- login, CAPTCHA, permission, request-frequency, or risk-control barrier appears;
+- selected ranking is not `图文直接成交榜`;
+- period is not `近1天`;
+- ranking date is not the expected latest completed date;
+- the shared browser/profile is under simultaneous control.
 
-Do not ask the user to expose passwords, cookies, tokens, or browser-profile files.
+Report expected and observed state. Do not continue to later category nodes and do not convert the failure to a zero-result report.
 
-## Category-Level Stops
+## Category-Node Failures
 
-A healthy shared session may continue to the next category when one category has:
+When the shared platform gate remains healthy, retry a failed configured node once. After two total attempts:
 
-- no accessible entry;
-- unstable or malformed rows;
-- missing product identifiers;
-- ambiguous content links.
+1. record path, attempts, collected pages/rows, and failure reason;
+2. mark overall coverage incomplete;
+3. continue to the next configured node serially;
+4. preserve every qualified relation already collected.
 
-Say `no verifiable rows were obtained` instead of claiming the category has no products.
+A missing category entry, unstable rows, or an early pagination stop is a node failure, not proof of no products.
+
+## Unresolved Relations
+
+Do not place a relation in the qualified product list when publication time is missing/unreadable or new-entry evidence is absent. Preserve the safe identifying fields in the unresolved ledger and count them in the summary.
+
+Missing price, work ID, product link, or display metrics does not by itself exclude an otherwise qualified relation. Mark the field `待验证`.
 
 ## Stale Ranking
 
-Report both dates:
+Report both dates and stop:
 
 ```text
-Expected ranking date: YYYY-MM-DD
-Observed ranking date: YYYY-MM-DD
-Result: ranking not updated; no storage write performed
+Expected latest ranking: YYYY-MM-DD
+Observed ranking: YYYY-MM-DD
+Result: platform gate failed; no user-list artifact or storage write was produced
 ```
 
-Do not reuse yesterday's checkpoint as today's discovery run.
+Do not substitute an older ranking or collect three historical ranking dates.
 
-## Incomplete Collection
+## Incomplete Coverage
 
-When collection cannot prove the final page, report:
+Report:
 
-- pages and rows collected;
-- the reason collection stopped;
-- that results are complete only within the collected range.
-
-## Link Problems
-
-Keep the product row and mark the content link as missing, ambiguous, or unverified. Do not invent a link, use the product link as a substitute, or silently discard the row.
+- configured node count, completed node count, and failed node count;
+- attempts and reason for every failed node;
+- source relation count, qualified relation count, and unique product count;
+- explicit statement `覆盖不完整，不能宣称平台全量`.
 
 ## Storage Problems
 
-Preserve the same idempotency key and report inserted, existing, and failed counts. A retry should resume the same dataset rather than collecting a second copy.
+Storage mode preserves the adopting project's existing checkpoint and idempotency behavior. Report inserted, existing, and failed rows; never rerun collection merely to hide a partial write.
 
 ## Quantity Shortfall
 
-A requested quantity is a target, not permission to relax category, date, new-entry, or evidence conditions. Report the actual count and the filtering breakdown.
+A requested quantity is a target, not permission to relax category, date, new-entry, or price rules. Report the actual count and filtering breakdown. Never backfill from another date, ranking, category, or previous HTML file.

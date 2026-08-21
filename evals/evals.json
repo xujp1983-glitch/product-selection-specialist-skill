@@ -104,14 +104,119 @@
     },
     {
       "id": 11,
+      "prompt": "选品专员，按默认规则跑我常用的5个类目，尽量多找。",
+      "expected_output": "Load the fixed five-anchor category catalog, scan every configured aggregate and fine-category node serially to TOP200 or end, and impose no product-count cap.",
+      "expectations": [
+        "Reads references/category-catalog.yaml",
+        "Does not enumerate live categories during the normal run",
+        "Uses every configured third-level node with fourth-level 全部",
+        "Does not add a Top-N product limit"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "今天是8月21日，给我找近三天新上榜的作品。",
+      "expected_output": "Use only the completed 8月20日 ranking and filter its works to 8月18日至20日 with is_new=true.",
+      "expectations": [
+        "Uses one latest completed ranking",
+        "Does not query three historical ranking dates",
+        "Requires explicit new-entry evidence",
+        "Reports the resolved three-date window"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "价格区间999到1200的保留，1000.01到1200的不要。",
+      "expected_output": "Apply the lower bound as lowest purchasable price, keeping 999 and excluding 1000.01.",
+      "expectations": [
+        "Uses the range lower bound",
+        "Excludes only prices greater than 1000",
+        "Does not add other business filters"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "这个商品价格没读出来，但其他条件都符合。",
+      "expected_output": "Keep the product and mark price as 待验证.",
+      "expectations": [
+        "Does not exclude missing price",
+        "Marks the missing evidence",
+        "Does not infer a price"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "同一个商品被三个不同图文带上榜了，帮我看出来。",
+      "expected_output": "Group by product ID, preserve all distinct works, label the product 重点复刻, and use the best rank as representative.",
+      "expectations": [
+        "Counts distinct current-run work IDs",
+        "Uses the 3-4 tier 重点复刻",
+        "Keeps every work in the expandable product group",
+        "Chooses the best-ranked work"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "作品ID是7674483845189681009，链接不用验证，给我能点开的地址。",
+      "expected_output": "Construct https://www.douyin.com/video/7674483845189681009 without opening or validating it.",
+      "expectations": [
+        "Builds the deterministic Douyin URL",
+        "Does not open the work page",
+        "Keeps product and work links separate"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "某个细分类目读取失败了，其他类目还能跑。",
+      "expected_output": "Retry the node once, continue serially if the shared platform gate remains healthy, and mark overall coverage incomplete.",
+      "expectations": [
+        "Makes at most two total node attempts",
+        "Continues only when the platform gate is healthy",
+        "Lists the failed node",
+        "Does not claim full coverage"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "身份读出来不是数据罗盘，但你先跑后面四个类目。",
+      "expected_output": "Stop the entire run before category collection.",
+      "expectations": [
+        "Treats identity as a platform-level gate",
+        "Does not continue to later categories",
+        "Does not generate fake zero results"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "今天正常跑选品，顺便看看平台有没有新增细分类目。",
+      "expected_output": "Run from the fixed catalog and do not enumerate or update categories unless the user explicitly authorizes a catalog refresh.",
+      "expectations": [
+        "Uses the stored category catalog",
+        "Does not perform runtime category discovery",
+        "Explains the explicit update trigger"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "结果别发Markdown，给我一个可以直接点链接的页面。",
+      "expected_output": "Generate a dated standalone HTML file with coverage, repetition radar, grouped products, all works, filters, product links, and deterministic Douyin links.",
+      "expectations": [
+        "Uses the reusable HTML generator",
+        "Creates 选品结果-YYYY-MM-DD-近3日.html",
+        "Keeps the chat response to summary and the clickable artifact",
+        "Does not substitute a Markdown file"
+      ]
+    },
+    {
+      "id": 21,
       "prompt": "把五个类目的结果按之前的格式发我，每条都要有成交区间、件数、观看、点赞、商品ID、商品链接和抖音作品链接。",
-      "expected_output": "Use Chinese-numbered category headings and fixed per-product item blocks with every requested metric and both links; do not fall back to a compact table or invent missing values.",
+      "expected_output": "Honor the explicit legacy-text override with Chinese-numbered category headings and fixed per-product item blocks while retaining the v0.2.0 filtering and grouping rules.",
       "expectations": [
         "Uses a Chinese numeral, full Data Compass category path, and item count in each category heading",
         "Includes rank, product, price, content title, creator, account, and publication time for every item",
-        "Includes pay or transaction range, item count, views, likes, and product ID for every item",
-        "Provides separate product and Douyin content links with a visible link status",
-        "Separates pay and transaction ranges when they differ and marks unavailable data as unverified"
+        "Includes transaction amount, item count, views, likes, and product ID for every item",
+        "Provides separate product and deterministic Douyin work links",
+        "Marks unavailable values and link status as unverified without opening links"
       ]
     }
   ]

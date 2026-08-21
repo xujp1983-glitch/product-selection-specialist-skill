@@ -13,13 +13,27 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = (
     "SKILL.md",
     "README.md",
+    "VERSION",
+    "CHANGELOG.md",
     "LICENSE",
     "evals/evals.json",
     "references/workflow.md",
     "references/adapter-contract.md",
+    "references/category-catalog.yaml",
     "references/failure-handling.md",
+    "scripts/render_selection_html.mjs",
+    "tests/render_selection_html.test.mjs",
+    "tests/test_skill_contract.py",
 )
-TEXT_SUFFIXES = {".md", ".json", ".py", ".txt", ".yaml", ".yml"}
+TEXT_SUFFIXES = {".md", ".json", ".mjs", ".py", ".txt", ".yaml", ".yml"}
+
+EXPECTED_ANCHORS = {
+    "个护家清": 14,
+    "彩妆香水": 8,
+    "休闲食品": 15,
+    "居家日用": 13,
+    "营养保健特医食品": 4,
+}
 
 FORBIDDEN_PATTERNS = {
     "personal macOS path": re.compile("/" + r"Users/[^/\s]+/"),
@@ -90,8 +104,8 @@ def validate_evals(errors: list[str]) -> None:
         errors.append("evals skill_name does not match the skill")
 
     evals = data.get("evals")
-    if not isinstance(evals, list) or len(evals) < 6:
-        errors.append("evals/evals.json must contain at least 6 evals")
+    if not isinstance(evals, list) or len(evals) < 15:
+        errors.append("evals/evals.json must contain at least 15 evals")
         return
 
     seen_ids: set[object] = set()
@@ -111,6 +125,43 @@ def validate_evals(errors: list[str]) -> None:
             errors.append(f"eval {eval_id!r} has no expectations")
 
 
+def validate_version(errors: list[str]) -> None:
+    path = ROOT / "VERSION"
+    if path.is_file() and path.read_text(encoding="utf-8").strip() != "0.2.0":
+        errors.append("VERSION must be 0.2.0")
+
+
+def validate_category_catalog(errors: list[str]) -> None:
+    path = ROOT / "references/category-catalog.yaml"
+    if not path.is_file():
+        return
+    try:
+        catalog = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"category-catalog.yaml must be JSON-compatible YAML: {exc}")
+        return
+
+    anchors = catalog.get("anchors")
+    if not isinstance(anchors, list):
+        errors.append("category catalog anchors must be a list")
+        return
+    observed = {
+        item.get("logical_name"): len(item.get("third_level_categories", []))
+        for item in anchors
+        if isinstance(item, dict)
+    }
+    if observed != EXPECTED_ANCHORS:
+        errors.append(f"category catalog anchors mismatch: {observed!r}")
+    for item in anchors:
+        if not isinstance(item, dict):
+            continue
+        categories = item.get("third_level_categories")
+        if not isinstance(categories, list) or not categories or categories[0] != "全部":
+            errors.append(
+                f"category {item.get('logical_name')!r} must begin with the aggregate 全部 node"
+            )
+
+
 def scan_sensitive_content(errors: list[str]) -> None:
     for path in iter_text_files():
         relative_path = path.relative_to(ROOT)
@@ -125,6 +176,8 @@ def main() -> int:
     validate_required_files(errors)
     validate_skill(errors)
     validate_evals(errors)
+    validate_version(errors)
+    validate_category_catalog(errors)
     scan_sensitive_content(errors)
 
     if errors:
